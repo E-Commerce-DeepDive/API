@@ -1,6 +1,9 @@
 using Ecommerce.Entities.Models.Auth.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Ecommerce.Entities.Models.Reviews;
+using Ecommerce.Utilities.Enums;
+
 //using Ecommerce.Entities.Models.Reviews;
 
 namespace Ecommerce.Entities.Models.Auth.Users
@@ -18,9 +21,9 @@ namespace Ecommerce.Entities.Models.Auth.Users
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Relations
-        //public Cart Cart { get; set; } // One-to-One
-        //public Wishlist Wishlist { get; set; } // One-to-One
-        //public List<Order> Orders { get; set; } = new List<Order>(); // One-to-Many
-        //public List<Review> Reviews { get; set; } = new List<Review>(); // One-to-Many
+        public Cart Cart { get; set; } // One-to-One
+        public Wishlist Wishlist { get; set; } // One-to-One
+        public List<Order> Orders { get; set; } = new List<Order>(); // One-to-Many
+        public List<Review> Reviews { get; set; } = new List<Review>(); // One-to-Many
     }
 }
