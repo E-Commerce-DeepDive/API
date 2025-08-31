@@ -15,7 +15,7 @@ namespace DataAccess.Tests
     public class AuthServiceTests
     {
         private readonly Mock<UserManager<User>> _mockUserManager;
-        private readonly Mock<AuthContext> _mockAuthContext;
+        private readonly Mock<EcommerceContext> _mockAuthContext;
         private readonly Mock<ITokenStoreService> _mockTokenStoreService;
         private readonly AuthService _authService;
         private readonly ResponseHandler _responseHandler;
@@ -31,7 +31,7 @@ namespace DataAccess.Tests
             _mockTokenStoreService = new Mock<ITokenStoreService>();
             _mockEmailService = new Mock<IEmailService>();
             //_mockOTPService = new Mock<IOTPService>();
-            _mockAuthContext = new Mock<AuthContext>();
+            _mockAuthContext = new Mock<EcommerceContext>();
             _responseHandler = new ResponseHandler();
 
             _authService = new AuthService(

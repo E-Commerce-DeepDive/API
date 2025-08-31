@@ -40,7 +40,7 @@ namespace Ecommerce.API.Extensions
                 opt.Password.RequireNonAlphanumeric = true;
                 opt.SignIn.RequireConfirmedEmail = false;
             })
-            .AddEntityFrameworkStores<AuthContext>()
+            .AddEntityFrameworkStores<EcommerceContext>()
             .AddRoleManager<RoleManager<Role>>()
             .AddUserManager<UserManager<User>>()
             .AddDefaultTokenProviders();

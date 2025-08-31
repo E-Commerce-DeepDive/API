@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Entities.Models.Auth.Identity;
 using Ecommerce.Entities.Models.Auth.Users;
+using Ecommerce.Utilities.Enums;
 using Ecommerce.Utilities.Enums.Reviews;
 
 namespace Ecommerce.Entities.Models.Reviews
@@ -23,7 +24,7 @@ namespace Ecommerce.Entities.Models.Reviews
 
         // Navigation Properties
         public Buyer Buyer { get; set; }
-       // public Order Order { get; set; }
+        public Order Order { get; set; }
         public Product Product { get; set; }
 
         public ICollection<ReviewAttribute> Attributes { get; set; } = new List<ReviewAttribute>();
