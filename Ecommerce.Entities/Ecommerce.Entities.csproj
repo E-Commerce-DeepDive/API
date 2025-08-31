@@ -23,4 +23,10 @@
 	  <ProjectReference Include="..\Ecommerce.Utilities\Ecommerce.Utilities.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="CloudinaryDotNet">
+	    <HintPath>..\..\..\.nuget\packages\cloudinarydotnet\1.27.5\lib\netstandard2.0\CloudinaryDotNet.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>
