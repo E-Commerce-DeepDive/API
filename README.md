@@ -48,7 +48,6 @@ Branches are named to reflect the type of work and the impacted area: `[type-of-
 Branches are organized by the impacted area of the platform, aligned with our models:
 - **auth/**: Authentication-related work (e.g., MFA, JWT).
 - **buyer/**: Buyer features (e.g., cart, wishlist).
-- **seller/**: Seller features (e.g., product management).
 - **admin/**: Admin tools (e.g., review moderation).
 - **products/**: Product-related features (e.g., AR visuals).
 - **orders/**: Order processing (e.g., checkout, tracking).
