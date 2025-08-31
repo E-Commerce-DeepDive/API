@@ -183,67 +183,67 @@ namespace Api.Tests
         }
 
         #endregion
-
-        #region Verify OTP Tests
-
-        [Fact]
-        public async Task VerifyOtp_ValidRequest_ReturnsOkResult()
-        {
-            // Arrange
-            var verifyOtpRequest = new VerifyOtpRequest { UserId = "123", Otp = "123456" };
-            var response = new Response<bool> { StatusCode = HttpStatusCode.OK, Data = true };
-
-            _controller.ModelState.Clear();
-            _mockAuthService.Setup(s => s.VerifyOtpAsync(verifyOtpRequest))
-                .ReturnsAsync(response);
-
-            // Act
-            var result = await _controller.VerifyOtp(verifyOtpRequest);
-
-            // Assert
-            var actionResult = Assert.IsType<ObjectResult>(result.Result);
-            Assert.Equal(200, actionResult.StatusCode);
-        }
-
-        [Fact]
-        public async Task VerifyOtp_InvalidModelState_ReturnsBadRequest()
-        {
-            // Arrange
-            var verifyOtpRequest = new VerifyOtpRequest();
-            _controller.ModelState.AddModelError("Email", "Email is required");
-
-            // Act
-            var result = await _controller.VerifyOtp(verifyOtpRequest);
-
-            // Assert
-            var actionResult = Assert.IsType<ObjectResult>(result.Result);
-            Assert.Equal(400, actionResult.StatusCode);
-        }
-
-        #endregion
-
-        #region Resend OTP Tests
-
-        [Fact]
-        public async Task ResendOtp_ValidRequest_ReturnsOkResult()
-        {
-            // Arrange
-            var resendOtpRequest = new ResendOtpRequest { UserId = "123" };
-            var response = new Response<string> { StatusCode = HttpStatusCode.OK, Data = "OTP sent successfully" };
-
-            _controller.ModelState.Clear();
-            _mockAuthService.Setup(s => s.ResendOtpAsync(resendOtpRequest))
-                .ReturnsAsync(response);
-
-            // Act
-            var result = await _controller.ResendOtp(resendOtpRequest);
-
-            // Assert
-            var actionResult = Assert.IsType<ObjectResult>(result.Result);
-            Assert.Equal(200, actionResult.StatusCode);
-        }
-
-        #endregion
+        //
+        // #region Verify OTP Tests
+        //
+        // [Fact]
+        // public async Task VerifyOtp_ValidRequest_ReturnsOkResult()
+        // {
+        //     // Arrange
+        //     var verifyOtpRequest = new VerifyOtpRequest { UserId = "123", Otp = "123456" };
+        //     var response = new Response<bool> { StatusCode = HttpStatusCode.OK, Data = true };
+        //
+        //     _controller.ModelState.Clear();
+        //     _mockAuthService.Setup(s => s.VerifyOtpAsync(verifyOtpRequest))
+        //         .ReturnsAsync(response);
+        //
+        //     // Act
+        //     var result = await _controller.VerifyOtp(verifyOtpRequest);
+        //
+        //     // Assert
+        //     var actionResult = Assert.IsType<ObjectResult>(result.Result);
+        //     Assert.Equal(200, actionResult.StatusCode);
+        // }
+        //
+        // [Fact]
+        // public async Task VerifyOtp_InvalidModelState_ReturnsBadRequest()
+        // {
+        //     // Arrange
+        //     var verifyOtpRequest = new VerifyOtpRequest();
+        //     _controller.ModelState.AddModelError("Email", "Email is required");
+        //
+        //     // Act
+        //     var result = await _controller.VerifyOtp(verifyOtpRequest);
+        //
+        //     // Assert
+        //     var actionResult = Assert.IsType<ObjectResult>(result.Result);
+        //     Assert.Equal(400, actionResult.StatusCode);
+        // }
+        //
+        // #endregion
+        //
+        // #region Resend OTP Tests
+        //
+        // [Fact]
+        // public async Task ResendOtp_ValidRequest_ReturnsOkResult()
+        // {
+        //     // Arrange
+        //     var resendOtpRequest = new ResendOtpRequest { UserId = "123" };
+        //     var response = new Response<string> { StatusCode = HttpStatusCode.OK, Data = "OTP sent successfully" };
+        //
+        //     _controller.ModelState.Clear();
+        //     _mockAuthService.Setup(s => s.ResendOtpAsync(resendOtpRequest))
+        //         .ReturnsAsync(response);
+        //
+        //     // Act
+        //     var result = await _controller.ResendOtp(resendOtpRequest);
+        //
+        //     // Assert
+        //     var actionResult = Assert.IsType<ObjectResult>(result.Result);
+        //     Assert.Equal(200, actionResult.StatusCode);
+        // }
+        //
+        // #endregion
 
         #region Forget Password Tests
 

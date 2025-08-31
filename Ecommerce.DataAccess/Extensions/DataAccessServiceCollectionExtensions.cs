@@ -6,7 +6,7 @@ using Ecommerce.DataAccess.Services.Auth;
 using Ecommerce.DataAccess.Services.Email;
 using Ecommerce.DataAccess.Services.ImageUploading;
 using Ecommerce.DataAccess.Services.OAuth;
-using Ecommerce.DataAccess.Services.OTP;
+//using Ecommerce.DataAccess.Services.OTP;
 using Ecommerce.DataAccess.Services.Token;
 using Ecommerce.Utilities.Configurations;
 
@@ -28,7 +28,7 @@ namespace Ecommerce.DataAccess.Extensions
         }
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped<IOTPService, OTPService>();
+            //services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
             services.AddScoped<ITokenStoreService, TokenStoreService>();

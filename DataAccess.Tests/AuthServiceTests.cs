@@ -1,7 +1,7 @@
 using Ecommerce.DataAccess.ApplicationContext;
 using Ecommerce.DataAccess.Services.Auth;
 using Ecommerce.DataAccess.Services.Email;
-using Ecommerce.DataAccess.Services.OTP;
+//using Ecommerce.DataAccess.Services.OTP;
 using Ecommerce.DataAccess.Services.Token;
 using Ecommerce.Entities.Models.Auth.Identity;
 using Ecommerce.Entities.Shared.Bases;
@@ -20,7 +20,7 @@ namespace DataAccess.Tests
         private readonly AuthService _authService;
         private readonly ResponseHandler _responseHandler;
         private readonly Mock<IEmailService> _mockEmailService;
-        private readonly Mock<IOTPService> _mockOTPService;
+        //private readonly Mock<IOTPService> _mockOTPService;
 
         public AuthServiceTests()
         {
@@ -30,7 +30,7 @@ namespace DataAccess.Tests
 
             _mockTokenStoreService = new Mock<ITokenStoreService>();
             _mockEmailService = new Mock<IEmailService>();
-            _mockOTPService = new Mock<IOTPService>();
+            //_mockOTPService = new Mock<IOTPService>();
             _mockAuthContext = new Mock<AuthContext>();
             _responseHandler = new ResponseHandler();
 
@@ -38,7 +38,7 @@ namespace DataAccess.Tests
                 _mockUserManager.Object,
                 _mockAuthContext.Object,
                 _mockEmailService.Object,
-                _mockOTPService.Object,
+               // _mockOTPService.Object,
                 _responseHandler,
                 _mockTokenStoreService.Object,
                 null

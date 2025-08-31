@@ -1,0 +1,48 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Ecommerce.Entities.Models;
+using Ecommerce.Entities.Models.Auth.Users;
+
+namespace Ecommerce.Utilities.Enums;
+
+public class Order
+{
+    [Key]
+    public Guid Id { get; set; }
+
+    [Required]
+    public string BuyerId { get; set; }
+
+    [ForeignKey(nameof(BuyerId))]
+    public Buyer Buyer { get; set; }
+
+    [Required]
+    public string SellerId { get; set; }
+
+    [ForeignKey(nameof(SellerId))]
+
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+
+    public decimal TotalPrice { get; set; }
+
+    public string ShippingAddress { get; set; }
+    public decimal ShippingPrice { get; set; }
+    public string TrackingNumber { get; set; }
+
+    public string CourierService { get; set; }
+    public bool IsDeleted { get; set; }
+
+    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+
+    public DateTime? ShippedDate { get; set; }
+
+    public DateTime? DeliveredDate { get; set; }
+
+    public DateTime? CancelledDate { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+}

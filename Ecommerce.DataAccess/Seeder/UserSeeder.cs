@@ -16,7 +16,7 @@ namespace Ecommerce.DataAccess.Seeder
                 {
                     UserName = "admin",
                     Email = "admin@gmail.com",
-                    PhoneNumber = "01224309198",
+                    PhoneNumber = "01069391275",
                     EmailConfirmed = true,
                 };
                 await _userManager.CreateAsync(adminUser, "P@ssw0rd123Pass");

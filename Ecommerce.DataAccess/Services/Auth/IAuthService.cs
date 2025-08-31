@@ -16,8 +16,8 @@ namespace Ecommerce.DataAccess.Services.Auth
     {
         Task<Response<LoginResponse>> LoginAsync(LoginRequest loginRequest);
         Task<Response<RegisterResponse>> RegisterAsync(RegisterRequest registerRequest);
-        Task<Response<bool>> VerifyOtpAsync(VerifyOtpRequest verifyOtpRequest);
-        Task<Response<string>> ResendOtpAsync(ResendOtpRequest resendOtpRequest);
+        //Task<Response<bool>> VerifyOtpAsync(VerifyOtpRequest verifyOtpRequest);
+        //Task<Response<string>> ResendOtpAsync(ResendOtpRequest resendOtpRequest);
         Task<Response<ForgetPasswordResponse>> ForgotPasswordAsync(ForgetPasswordRequest model);
         Task<Response<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest model);
         Task<RefreshTokenResponse> RefreshTokenAsync(string refreshToken);

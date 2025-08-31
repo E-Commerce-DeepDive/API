@@ -101,28 +101,28 @@ namespace Ecommerce.API.Controllers
             return StatusCode((int)response.StatusCode, response);
         }
 
-        [HttpPost("verify-otp")]
-        public async Task<ActionResult<Response<bool>>> VerifyOtp([FromBody] VerifyOtpRequest model)
-        {
-            if (!ModelState.IsValid)
-                return StatusCode((int)_responseHandler.BadRequest<object>("Invalid input data.").StatusCode,
-                    _responseHandler.BadRequest<object>("Invalid input data."));
+        // [HttpPost("verify-otp")]
+        // public async Task<ActionResult<Response<bool>>> VerifyOtp([FromBody] VerifyOtpRequest model)
+        // {
+        //     if (!ModelState.IsValid)
+        //         return StatusCode((int)_responseHandler.BadRequest<object>("Invalid input data.").StatusCode,
+        //             _responseHandler.BadRequest<object>("Invalid input data."));
+        //
+        //     var result = await _authService.VerifyOtpAsync(model);
+        //     return StatusCode((int)result.StatusCode, result);
+        // }
 
-            var result = await _authService.VerifyOtpAsync(model);
-            return StatusCode((int)result.StatusCode, result);
-        }
-
-        [HttpPost("resend-otp")]
-        [EnableRateLimiting("SendOtpPolicy")]
-        public async Task<ActionResult<Response<string>>> ResendOtp([FromBody] ResendOtpRequest model)
-        {
-            if (!ModelState.IsValid)
-                return StatusCode((int)_responseHandler.BadRequest<object>("Invalid input data.").StatusCode,
-                    _responseHandler.BadRequest<object>("Invalid input data."));
-
-            var result = await _authService.ResendOtpAsync(model);
-            return StatusCode((int)result.StatusCode, result);
-        }
+        // [HttpPost("resend-otp")]
+        // [EnableRateLimiting("SendOtpPolicy")]
+        // public async Task<ActionResult<Response<string>>> ResendOtp([FromBody] ResendOtpRequest model)
+        // {
+        //     if (!ModelState.IsValid)
+        //         return StatusCode((int)_responseHandler.BadRequest<object>("Invalid input data.").StatusCode,
+        //             _responseHandler.BadRequest<object>("Invalid input data."));
+        //
+        //     var result = await _authService.ResendOtpAsync(model);
+        //     return StatusCode((int)result.StatusCode, result);
+        // }
         [HttpPost("forget-password")]
         public async Task<ActionResult<Response<ForgetPasswordResponse>>> ForgetPassword([FromBody] ForgetPasswordRequest request)
         {
