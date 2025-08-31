@@ -161,7 +161,7 @@ public class AdminService:IAdminService
                 images.Add(new ProductImage
                 {
                     Id = Guid.NewGuid(),
-                    ImageUrl = imageUrl, // ✅ خلاص ده string URL جاهز
+                    ImageUrl = imageUrl, 
                     ProductId = productId,
                     CreatedAt = DateTime.UtcNow,
                     IsPrimary = isFirstImage
