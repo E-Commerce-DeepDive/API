@@ -2,6 +2,7 @@
 using System.Net.Mail;
 
 using Ecommerce.DataAccess.ApplicationContext;
+using Ecommerce.DataAccess.Services.Admin;
 using Ecommerce.DataAccess.Services.Auth;
 using Ecommerce.DataAccess.Services.Email;
 using Ecommerce.DataAccess.Services.ImageUploading;
@@ -20,7 +21,7 @@ namespace Ecommerce.DataAccess.Extensions
     {
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<AuthContext>(options =>
+            services.AddDbContext<EcommerceContext>(options =>
                 options.UseSqlServer(
                     configuration.GetConnectionString("DevCS")));
 
@@ -34,7 +35,14 @@ namespace Ecommerce.DataAccess.Extensions
             services.AddScoped<ITokenStoreService, TokenStoreService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthGoogleService, AuthGoogleService>();
-
+            // services.AddScoped<IWishlistService, WishlistService>();
+            // services.AddScoped<IReviewService, ReviewService>();
+            // services.AddScoped<ICategoryService, CategoryService>();
+            // services.AddScoped<IProductService, ProductService>();
+            // services.AddScoped<IWishlistService, WishlistService>();    
+            // services.AddScoped<IOrderService, OrderService>();
+            // services.AddScoped<ICartService, CartService>();
+            services.AddScoped<IAdminService, AdminService>();
             return services;
         }
 

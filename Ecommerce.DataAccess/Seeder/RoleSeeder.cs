@@ -21,8 +21,8 @@ namespace Ecommerce.DataAccess.Seeder
                 await _roleManager.CreateAsync(new Role()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User",
-                    NormalizedName = "USER"
+                    Name = "Buyer",
+                    NormalizedName = "BUYER"
                 });
 
             }

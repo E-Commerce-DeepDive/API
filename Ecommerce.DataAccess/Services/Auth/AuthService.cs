@@ -25,14 +25,14 @@ namespace Ecommerce.DataAccess.Services.Auth
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
-        private readonly AuthContext _context;
+        private readonly EcommerceContext _context;
         private readonly IEmailService _emailService;
        // private readonly IOTPService _otpService;
         private readonly ResponseHandler _responseHandler;
         private readonly ITokenStoreService _tokenStoreService;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<User> userManager, AuthContext context, IEmailService emailService /*IOTPService otpService*/, ResponseHandler responseHandler, ITokenStoreService tokenStoreService, ILogger<AuthService> logger)
+        public AuthService(UserManager<User> userManager, EcommerceContext context, IEmailService emailService /*IOTPService otpService*/, ResponseHandler responseHandler, ITokenStoreService tokenStoreService, ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _context = context;
@@ -123,11 +123,9 @@ namespace Ecommerce.DataAccess.Services.Auth
                     return _responseHandler.BadRequest<RegisterResponse>(string.Join(", ", errors));
                 }
 
-                // Assign User role
-                await _userManager.AddToRoleAsync(user, "USER");
-                _logger.LogInformation("User created and role 'User' assigned. ID: {UserId}", user.Id);
-
-                await _userManager.CreateAsync(user);
+                // Assign Buyer role
+                await _userManager.AddToRoleAsync(user, "Buyer");
+                _logger.LogInformation("User created and role 'Buyer' assigned. ID: {UserId}", user.Id);
 
                 var tokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
 
@@ -148,7 +146,7 @@ namespace Ecommerce.DataAccess.Services.Auth
                     Id = user.Id,
                     IsEmailConfirmed = true,
                     PhoneNumber = registerRequest.PhoneNumber,
-                    Role = "USER",
+                    Role = "Buyer",
                     AccessToken = tokens.AccessToken,
                     RefreshToken = tokens.RefreshToken
                 };
