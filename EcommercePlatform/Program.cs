@@ -1,4 +1,5 @@
 
+using System.Text.Json.Serialization;
 using Ecommerce.API.Extensions;
 using Ecommerce.DataAccess.ApplicationContext;
 using Ecommerce.DataAccess.Extensions;
@@ -20,7 +21,15 @@ namespace EcommercePlatform
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true;
+                })
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
             builder.Host.UseSerilogLogging();
 

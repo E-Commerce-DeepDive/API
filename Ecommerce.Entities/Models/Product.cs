@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Ecommerce.Entities.Models.Reviews;
+using Ecommerce.Utilities.Enums;
 
 namespace Ecommerce.Entities.Models;
 
@@ -24,6 +25,7 @@ public class Product
     [ForeignKey(nameof(CategoryId))]
     public Category Category { get; set; }
     public int StockQuantity { get; set; }
+    public ShippingOptions ShippingOption { get; set; }
     
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
