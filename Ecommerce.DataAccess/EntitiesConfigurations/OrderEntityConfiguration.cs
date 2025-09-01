@@ -11,8 +11,6 @@ namespace Ecommerce.DataAccess.EntitiesConfigurations
         {
             builder.HasKey(o => o.Id);
 
-            builder.HasIndex(o => new { o.BuyerId, o.SellerId });
-
             builder.Property(o => o.TotalPrice)
                    .HasColumnType("decimal(18,2)");
 
