@@ -97,7 +97,7 @@ public class AdminService:IAdminService
             productId, product.Name, product.CategoryId);
 
         return _responseHandler.Created<Guid>(productId,
-            "Product created successfully and is pending approval.");
+            "Product created successfully.");
     }
     catch (DbUpdateException ex)
     {
