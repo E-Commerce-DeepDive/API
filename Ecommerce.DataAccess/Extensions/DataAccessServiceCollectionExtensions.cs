@@ -11,6 +11,7 @@ using Ecommerce.DataAccess.Services.ImageUploading;
 using Ecommerce.DataAccess.Services.OAuth;
 //using Ecommerce.DataAccess.Services.OTP;
 using Ecommerce.DataAccess.Services.Token;
+using Ecommerce.DataAccess.Services.Wishlist;
 using Ecommerce.Utilities.Configurations;
 
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ namespace Ecommerce.DataAccess.Extensions
             // services.AddScoped<IReviewService, ReviewService>();
              services.AddScoped<ICategoryService, CategoryService>();
             // services.AddScoped<IProductService, ProductService>();
-            // services.AddScoped<IWishlistService, WishlistService>();    
+             services.AddScoped<IWishlistService, WishlistService>();    
             // services.AddScoped<IOrderService, OrderService>();
              services.AddScoped<ICartService, CartService>();
             services.AddScoped<IAdminService, AdminService>();
