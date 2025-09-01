@@ -5,7 +5,10 @@ namespace Ecommerce.API.Validators.Products;
 
 public static class ProductValidationHelpers
 {
-    
+    public static bool BeValidShippingOption(string shippingOption)
+    {
+        return Enum.TryParse(typeof(ShippingOptions), shippingOption, true, out _);
+    }
     public static bool IsSupportedImageType(string contentType)
     {
         var supported = new[] { "image/jpeg", "image/png" };

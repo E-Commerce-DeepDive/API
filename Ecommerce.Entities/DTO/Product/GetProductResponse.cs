@@ -1,3 +1,5 @@
+using Ecommerce.Utilities.Enums;
+
 namespace Ecommerce.Entities.DTO.Product;
 
 public class GetProductResponse
@@ -12,6 +14,8 @@ public class GetProductResponse
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public bool IsActive { get; set; }
+        public ShippingOptions ShippingOption { get; set; }
+    
     public List<string> ImageUrls { get; set; }
     public double? AverageRating { get; set; }
     public int ReviewCount { get; set; }

@@ -4,6 +4,7 @@ using Ecommerce.DataAccess.Services.ImageUploading;
 using Ecommerce.Entities.DTO.Product;
 using Ecommerce.Entities.Models;
 using Ecommerce.Entities.Shared.Bases;
+using Ecommerce.Utilities.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -305,6 +306,20 @@ public async Task<Response<List<GetProductResponse>>> GetProductsAsync(Expressio
         {
             var uploadedImages = await ReplaceProductImagesAsync(product.Id, dto.Images);
             product.Images = uploadedImages.ToList();
+        }
+        if (!string.Equals(dto.ShippingOption, product.ShippingOption.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            if (Enum.TryParse(typeof(ShippingOptions), dto.ShippingOption, true, out var shippingOptionEnum))
+            {
+                _logger.LogInformation("ShippingOption changed from {Old} to {New}",
+                    product.ShippingOption, shippingOptionEnum);
+
+                product.ShippingOption = (ShippingOptions)shippingOptionEnum;
+            }
+            else
+            {
+                return _responseHandler.BadRequest<Guid>("Invalid shipping option provided.Only Express , Standard , LocalDelivery , Pickup");
+            }
         }
 
         await _context.SaveChangesAsync();
