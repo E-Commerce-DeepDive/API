@@ -9,6 +9,7 @@ using Ecommerce.Entities.DTO.Account.Auth.Login;
 using Ecommerce.Entities.DTO.Account.Auth.Register;
 using Ecommerce.Entities.DTO.Account.Auth.ResetPassword;
 using Ecommerce.Entities.Models.Auth.Identity;
+using Ecommerce.Entities.Models.Auth.Users;
 using Ecommerce.Entities.Shared.Bases;
 
 using Microsoft.AspNetCore.Identity;
@@ -134,7 +135,18 @@ namespace Ecommerce.DataAccess.Services.Auth
                 // Send OTP via Email
                 // await _emailService.SendOtpEmailAsync(user, otp);
                 //
-                // await _context.SaveChangesAsync();
+                var buyer = new Buyer
+                { Id = user.Id,  // Use the same UserId
+                    User = user,
+                    FirstName = registerRequest.FirstName,
+                    LastName = registerRequest.LastName,
+                    BirthDate = registerRequest.BirthDate,
+                    CreatedAt = DateTime.UtcNow
+                    
+                };
+                await _context.Buyers.AddAsync(buyer);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
                 // await transaction.CommitAsync();
                 //
                 // _logger.LogInformation("User registration completed successfully. Email sent to {Email}", registerRequest.Email);

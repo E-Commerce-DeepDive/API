@@ -41,7 +41,11 @@ namespace Ecommerce.API.Validators
                 images.RuleFor(file => file.ContentType)
                     .Must(ct => ProductValidationHelpers.IsSupportedImageType(ct))
                     .WithMessage("Only JPEG and PNG images are supported.");
-                
+                RuleFor(x => x.ShippingOption)
+                    .NotEmpty().WithMessage("Shipping option is required.")
+                    .Must(ProductValidationHelpers.BeValidShippingOption)
+                    .WithMessage("Invalid shipping option provided. Allowed values: " 
+                                 + string.Join(", ", Enum.GetNames(typeof(ShippingOptions))));
                
             });
         }
