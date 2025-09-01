@@ -4,6 +4,7 @@ using System.Net.Mail;
 using Ecommerce.DataAccess.ApplicationContext;
 using Ecommerce.DataAccess.Services.Admin;
 using Ecommerce.DataAccess.Services.Auth;
+using Ecommerce.DataAccess.Services.Category;
 using Ecommerce.DataAccess.Services.Email;
 using Ecommerce.DataAccess.Services.ImageUploading;
 using Ecommerce.DataAccess.Services.OAuth;
@@ -37,11 +38,11 @@ namespace Ecommerce.DataAccess.Extensions
             services.AddScoped<IAuthGoogleService, AuthGoogleService>();
             // services.AddScoped<IWishlistService, WishlistService>();
             // services.AddScoped<IReviewService, ReviewService>();
-            // services.AddScoped<ICategoryService, CategoryService>();
+             services.AddScoped<ICategoryService, CategoryService>();
             // services.AddScoped<IProductService, ProductService>();
             // services.AddScoped<IWishlistService, WishlistService>();    
             // services.AddScoped<IOrderService, OrderService>();
-            // services.AddScoped<ICartService, CartService>();
+             //services.AddScoped<ICartService, CartService>();
             services.AddScoped<IAdminService, AdminService>();
             return services;
         }
