@@ -13,5 +13,6 @@ public interface IAdminService
     Task<Response<List<GetProductResponse>>> GetProductsAsync(
         Expression<Func<Entities.Models.Product, bool>> predicate);
     Task<Response<GetProductResponse>> GetProductByIdAsync(Guid id);
-    
+    Task<Response<string>> DeleteProductAsync(Guid productId);
+    Task<Response<Guid>> UpdateProductAsync(Guid productId, UpdateProductRequest dto);
 }

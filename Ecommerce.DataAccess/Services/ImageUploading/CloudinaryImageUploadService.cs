@@ -22,7 +22,6 @@ namespace Ecommerce.DataAccess.Services.ImageUploading
         }
         public async Task<string> UploadAsync(IFormFile file)
         {
-            // NOTE : Image validation must be done e.g(file extension....)
 
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty or null");
@@ -45,6 +44,17 @@ namespace Ecommerce.DataAccess.Services.ImageUploading
                 throw new Exception($"Cloudinary error occurred: {result.Error.Message}");
 
             return result.Url?.ToString() ?? throw new Exception("Cloudinary returned empty URL.");
+        }
+        
+        public async Task<bool> DeleteAsync(string publicId)
+        {
+            if (string.IsNullOrWhiteSpace(publicId))
+                return false;
+
+            var deletionParams = new DeletionParams(publicId);
+            var result = await _cloudinary.DestroyAsync(deletionParams);
+
+            return result.Result == "ok";
         }
     }
 }
