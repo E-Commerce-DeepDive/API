@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Ecommerce.DataAccess.Migrations
 {
-    [DbContext(typeof(AuthContext))]
+    [DbContext(typeof(EcommerceContext))]
     [Migration("20250831144757_AddedEntitiesAndConfigs")]
     partial class AddedEntitiesAndConfigs
     {
