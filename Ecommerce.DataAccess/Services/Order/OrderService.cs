@@ -26,10 +26,8 @@ public class OrderService : IOrderService
      public async Task<Response<OrderResponse>> AddOrderAsync(OrderRequest request, string userId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(userId))
-                return new Response<OrderResponse>("User not authenticated", false);
-
-         
-
+                return _responseHandler.Unauthorized<OrderResponse>("User not authenticated");
+            
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
@@ -65,10 +63,16 @@ public class OrderService : IOrderService
 
 
 
-                var order = CreateOrder(request);
+                var order = CreateOrder(request, userId);
 
                 await _context.Orders.AddAsync(order, cancellationToken);
                 UpdateProductStock(request.OrderItems, productsDict);
+                if (productsDict.Values.Any(p => p.StockQuantity < 0))
+                {
+                    _logger.LogWarning("Insufficient stock detected after attempting to reserve items for user {UserId}", userId);
+                    await transaction.RollbackAsync(cancellationToken);
+                    return _responseHandler.BadRequest<OrderResponse>("Insufficient stock for one or more items");
+                }
                 await _context.SaveChangesAsync(cancellationToken);
 
 
@@ -76,7 +80,7 @@ public class OrderService : IOrderService
 
 
 
-                var response = CreateOrderResponse(order);
+                var response = CreateOrderResponse(order,productsDict);
                 _logger.LogInformation(
                     "Order placed successfully - OrderId: {OrderId}, UserId: {UserId}, Items: {ItemCount}, Total: ${TotalPrice:F2}, Shipping: {ShippingService} to {ShippingAddress}",
                     order.Id,
@@ -97,26 +101,18 @@ public class OrderService : IOrderService
         }
      
      
-      public async Task<Response<PaginatedList<OrderResponse>>> GetAllAsync(string userId, OrderFilters<OrderSorting> filters, CancellationToken cancellationToken)
+        public async Task<Response<PaginatedList<OrderResponse>>> GetAllAsync(string? userId, OrderFilters<OrderSorting> filters, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Fetching orders for user {UserId} with filters: {@Filters}", userId ?? "ALL", filters);
 
-            if (userId is null)
+            IQueryable<Entities.Models.Order> query = _context.Orders.Where(o => !o.IsDeleted);
+            
+            if (!string.IsNullOrWhiteSpace(userId))
             {
-                _logger.LogWarning("UserId is null while fetching orders");
-                return _responseHandler.Unauthorized<PaginatedList<OrderResponse>>("User not authenticated");
+                query = query.Where(o => o.BuyerId == userId);
             }
 
-            _logger.LogInformation("Fetching orders for user {UserId} with filters: {@Filters}", userId, filters);
-
-            var query = _context.Orders
-                .Where(o => o.BuyerId == userId);
-
-
             var filteredList = FilteredListItems(query, filters, userId);
-
-
-            // TODO : Implement search functionality after knowing the criteria
-            //        Use (ProjectToType()) after adding Mapster/AutoMapper
 
             var source = filteredList.Include(o => o.OrderItems)
                 .Select(o => new OrderResponse
@@ -137,17 +133,218 @@ public class OrderService : IOrderService
                 })
                 .AsNoTracking().AsQueryable();
 
-
             var orders = await PaginatedList<OrderResponse>.CreateAsync(source, filters.PageNumber, filters.PageSize, cancellationToken);
 
-            _logger.LogInformation("Fetched {Count} orders for buyer {UserId} on page {PageNumber} with page size {PageSize}",
-                orders.Items.Count, userId, filters.PageNumber, filters.PageSize);
+            _logger.LogInformation("Fetched {Count} orders for user {UserId} on page {PageNumber} with page size {PageSize}",
+                orders.Items.Count, userId ?? "ALL", filters.PageNumber, filters.PageSize);
 
             return _responseHandler.Success(orders, "Orders fetched successfully");
         }
 
-     
-     
+        public async Task<Response<bool>> UpdateOrderAsync(string orderId, UpdateOrderRequest request, CancellationToken cancellationToken)
+        {
+            if (!Guid.TryParse(orderId, out var orderGuid))
+            {
+                _logger.LogWarning("Invalid order ID format: {OrderId}", orderId);
+                return _responseHandler.BadRequest<bool>("Invalid order ID format");
+            }
+
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderGuid && !o.IsDeleted, cancellationToken);
+
+            if (order is null)
+            {
+                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+                return _responseHandler.NotFound<bool>($"Order with ID {orderId} not found");
+            }
+
+            if (order.Status != OrderStatus.Confirmed && order.Status != OrderStatus.Processing)
+            {
+                _logger.LogWarning("Order with ID {OrderId} cannot be updated because it is in status {OrderStatus}", orderId, order.Status);
+                return _responseHandler.BadRequest<bool>($"Order with status {order.Status} cannot be updated");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                order.Status = request.Status;
+                order.ShippingAddress = request.ShippingAddress;
+                order.CourierService = request.CourierService;
+                order.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Order {OrderId} updated successfully", orderId);
+                await transaction.CommitAsync(cancellationToken);
+                return _responseHandler.Success(true, "Order updated successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Error occurred while updating order {OrderId}", orderId);
+                return _responseHandler.InternalServerError<bool>("An error occurred while updating the order");
+            }
+        }
+
+      public async Task<Response<bool>> ConfirmOrderAsync(string orderId, CancellationToken cancellationToken)
+{
+    if (!Guid.TryParse(orderId, out var orderGuid))
+    {
+        _logger.LogWarning("Invalid order ID format: {OrderId}", orderId);
+        return _responseHandler.BadRequest<bool>("Invalid order ID format");
+    }
+
+    var order = await _context.Orders
+        .FirstOrDefaultAsync(o => o.Id == orderGuid && !o.IsDeleted, cancellationToken);
+
+    if (order is null)
+    {
+        _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+        return _responseHandler.NotFound<bool>($"Order with ID {orderId} not found");
+    }
+
+    if (order.Status == OrderStatus.Confirmed)
+    {
+        _logger.LogWarning("Order with ID {OrderId} is already confirmed", orderId);
+        return _responseHandler.BadRequest<bool>($"Order is already confirmed");
+    }
+
+    if (order.Status != OrderStatus.Pending)
+    {
+        _logger.LogWarning("Order with ID {OrderId} and status {OrderStatus} cannot be confirmed unless it is pending", orderId, order.Status);
+        return _responseHandler.BadRequest<bool>($"Order with status {order.Status} cannot be confirmed");
+    }
+
+    _logger.LogInformation("Confirming order {OrderId}", orderId);
+
+    using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+    try
+    {
+        order.Status = OrderStatus.Confirmed;
+        order.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Order {OrderId} confirmed successfully", orderId);
+        await transaction.CommitAsync(cancellationToken);
+        return _responseHandler.Success(true, "Order confirmed successfully");
+    }
+    catch (Exception ex)
+    {
+        await transaction.RollbackAsync(cancellationToken);
+        _logger.LogError(ex, "Error occurred while confirming order {OrderId}", orderId);
+        return _responseHandler.InternalServerError<bool>("An error occurred while confirming the order");
+    }
+}
+
+       
+       public async Task<Response<bool>> CancelOrderAsync(string orderId, string userId, bool isAdmin, AdminCancelOrderRequest request, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("User with id {UserId} is trying to canecel order with id {OrderId}", userId, orderId);
+
+            if (!Guid.TryParse(orderId, out var orderGuid))
+            {
+                _logger.LogWarning("Invalid order ID format: {OrderId}", orderId);
+                return _responseHandler.BadRequest<bool>("Invalid order ID format");
+            }
+
+            var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var order = await _context.Orders
+                 .Where(o => o.Id == orderGuid && !o.IsDeleted)
+                 .Include(o => o.OrderItems)
+                 .SingleOrDefaultAsync(cancellationToken);
+
+                if (order is null)
+                {
+                    _logger.LogWarning("Order with ID {OrderId} not found for user {UserId}", orderId, userId);
+                    return _responseHandler.NotFound<bool>($"Order with ID {orderId} not found for user {userId}");
+                }
+
+
+                if (!isAdmin && order.BuyerId != userId)
+                {
+                    _logger.LogWarning("User {UserId} is not authorized to cancel order {OrderId}", userId, orderId);
+                    return _responseHandler.Unauthorized<bool>("You are not authorized to cancel this order");
+                }
+
+                if (isAdmin && string.IsNullOrWhiteSpace(request.CancelationReason))
+                {
+                    _logger.LogInformation("Admin user {UserId} tried to cancel order {OrderId} without reason", userId, orderId);
+                    return _responseHandler.BadRequest<bool>("Admin must provide a reason for cancellation");
+                }
+
+                var cancellableStatuses = isAdmin 
+                    ? new[] { OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Pending } 
+                    : new[] { OrderStatus.Pending };
+                if (!cancellableStatuses.Contains(order.Status))
+                {
+                    _logger.LogWarning("Order with ID {OrderId} with status {OrderStatus} cannot be cancelled for user {UserId}", orderId, order.Status, userId);
+                    return _responseHandler.BadRequest<bool>($"Order with status {order.Status} cannot be cancelled");
+                }
+
+                order.Status = OrderStatus.Cancelled;
+                order.CancelledDate = DateTime.UtcNow;
+                order.UpdatedAt = DateTime.UtcNow;
+
+                // Dependancy: Inventory management feature - update stock quantities
+                var productIds = order.OrderItems.Select(oi => oi.ProductId);
+                var products = await _context.Products
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToListAsync(cancellationToken);
+
+                var productsDict = products.ToDictionary(p => p.Id);
+
+                foreach (var item in order.OrderItems)
+                {
+                    if (productsDict.TryGetValue(item.ProductId, out var product))
+                    {
+                        product.StockQuantity += item.Quantity;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Product with ID {ProductId} not found while restoring stock for cancelled order {OrderId}", item.ProductId, orderId);
+                    }
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                _logger.LogInformation("Order with ID {OrderId} cancelled successfully for user {UserId} - Reason: {Reason}", orderId, userId, request.CancelationReason);
+
+                return _responseHandler.Success(true, "Order cancelled successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Error occurred while cancelling order with ID {OrderId} for user {UserId}", orderId, userId);
+                return _responseHandler.InternalServerError<bool>("An error occurred while cancelling the order");
+            }
+        }
+       
+       
+        public async Task<Response<bool>> DeleteOrderAsync(string orderId, string userId, bool isAdmin, CancellationToken cancellationToken)
+        {
+            if (!Guid.TryParse(orderId, out var orderGuid))
+                return _responseHandler.BadRequest<bool>("Invalid order id format");
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderGuid && !o.IsDeleted, cancellationToken);
+            if (order == null)
+                return _responseHandler.NotFound<bool>("Order not found");
+
+            // Buyer can delete only if Cancelled
+            if (!isAdmin)
+            {
+                if (order.BuyerId != userId)
+                    return _responseHandler.Unauthorized<bool>("You are not authorized to delete this order");
+                if (order.Status != OrderStatus.Cancelled)
+                    return _responseHandler.BadRequest<bool>("Only cancelled orders can be deleted by buyer");
+            }
+
+            order.IsDeleted = true;
+            order.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return _responseHandler.Success(true, "Order deleted successfully");
+        }
+
         private IQueryable<Entities.Models.Order> FilteredListItems<TSorting>(IQueryable<Entities.Models.Order> query, OrderFilters<TSorting> filters, string? userId)
             where TSorting : struct, Enum
         {
@@ -211,16 +408,17 @@ public class OrderService : IOrderService
             return errors;
         }
         
-        private static Entities.Models.Order CreateOrder(OrderRequest request)
+        private static Entities.Models.Order CreateOrder(OrderRequest request, string buyerId)
         {
             var order = new Entities.Models.Order
             {
-              
+                BuyerId = buyerId,
                 ShippingAddress = request.ShippingAddress,
                 ShippingPrice = request.ShippingPrice,
                 CourierService = request.CourierService,
                 TotalPrice = request.TotalPrice,
                 TrackingNumber = request.TrackingNumber,
+                Status = OrderStatus.Pending, 
                 OrderDate = DateTime.UtcNow,
                 OrderItems = request.OrderItems.Select(item => new OrderItem
                 {
@@ -233,8 +431,9 @@ public class OrderService : IOrderService
 
             return order;
         }
+
         
-        private static OrderResponse CreateOrderResponse(Entities.Models.Order order)
+        private static OrderResponse CreateOrderResponse(Entities.Models.Order order, Dictionary<Guid, Entities.Models.Product> productsDict)
         {
             return new OrderResponse
             {
@@ -250,10 +449,11 @@ public class OrderService : IOrderService
                     ProductId = oi.ProductId,
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice,
-                    ProductName = oi.Product.Name,
+                    ProductName = productsDict.TryGetValue(oi.ProductId, out var prod) ? prod.Name : "Unknown"
                 }).ToList()
             };
         }
+
         
         private static void UpdateProductStock(IEnumerable<OrderItemRequest> orderItems, Dictionary<Guid, Entities.Models.Product> productsDict)
         {

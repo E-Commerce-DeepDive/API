@@ -39,10 +39,8 @@ namespace Ecommerce.DataAccess.Extensions
             services.AddScoped<ITokenStoreService, TokenStoreService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthGoogleService, AuthGoogleService>();
-            // services.AddScoped<IWishlistService, WishlistService>();
             // services.AddScoped<IReviewService, ReviewService>();
              services.AddScoped<ICategoryService, CategoryService>();
-            // services.AddScoped<IProductService, ProductService>();
              services.AddScoped<IWishlistService, WishlistService>();    
              services.AddScoped<IOrderService, OrderService>();
              services.AddScoped<ICartService, CartService>();
