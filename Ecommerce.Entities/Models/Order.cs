@@ -2,8 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Ecommerce.Entities.Models;
 using Ecommerce.Entities.Models.Auth.Users;
+using Ecommerce.Utilities.Enums;
 
-namespace Ecommerce.Utilities.Enums;
+namespace Ecommerce.Entities.Models;
 
 public class Order
 {
