@@ -49,6 +49,8 @@ namespace EcommercePlatform
             builder.Services.AddDatabase(builder.Configuration);
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
             builder.Services.AddEmailServices(builder.Configuration);
+            builder.Services.AddCors();
+            
 
             builder.Services.AddFluentValidation();
 
@@ -89,7 +91,7 @@ namespace EcommercePlatform
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseCors(c=>c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
