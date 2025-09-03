@@ -44,41 +44,171 @@ namespace Ecommerce.DataAccess.Services.Auth
             _logger = logger;
         }
 
+        #region login&register
+        //public async Task<Response<LoginResponse>> LoginAsync(LoginRequest loginRequest)
+        //{
+        //    // Find user by email or phone number
+        //    User? user = await FindUserByEmailAsync(loginRequest.Email);
+
+        //    if (user == null)
+        //        return _responseHandler.NotFound<LoginResponse>("User not found.");
+
+        //    // Check password
+        //    if (!await _userManager.CheckPasswordAsync(user, loginRequest.Password))
+        //        return _responseHandler.BadRequest<LoginResponse>("Invalid password.");
+
+        //    // Check if email is confirmed
+        //    if (!user.EmailConfirmed)
+        //        return _responseHandler.BadRequest<LoginResponse>("Email is not verified. Please verify your email first.");
+
+        //    // If OTP is not provided, generate and send OTP
+        //    // if (string.IsNullOrEmpty(loginRequest.Otp))
+        //    // {
+        //    //     var otp = await _otpService.GenerateAndStoreOtpAsync(user.Id);
+        //    //     await _emailService.SendOtpEmailAsync(user, otp);
+        //    //     return _responseHandler.Success<LoginResponse>(null, "OTP sent to your email. Please provide the OTP to complete login.");
+        //    // }
+
+        //    // Get user roles
+        //    var roles = await _userManager.GetRolesAsync(user);
+
+
+        //    // Verify OTP
+        //    // var isOtpValid = await _otpService.ValidateOtpAsync(user.Id, loginRequest.Otp);
+        //    // if (!isOtpValid)
+        //    //     return _responseHandler.BadRequest<LoginResponse>("Invalid or expired OTP.");
+
+        //    // Generate tokens
+        //    var tokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
+
+        //    var response = new LoginResponse
+        //    {
+        //        Id = user.Id,
+        //        Email = user.Email,
+        //        PhoneNumber = user.PhoneNumber,
+        //        Role = roles.FirstOrDefault(),
+        //        IsEmailConfirmed = user.EmailConfirmed,
+        //        AccessToken = tokens.AccessToken,
+        //        RefreshToken = tokens.RefreshToken,
+        //    };
+
+        //    return _responseHandler.Success(response, "Login successful.");
+        //}
+        //public async Task<Response<RegisterResponse>> RegisterAsync(RegisterRequest registerRequest)
+        //{
+        //    _logger.LogInformation("RegisterAsync started for Email: {Email}", registerRequest.Email);
+
+        //    var emailPhoneCheck = await CheckIfEmailOrPhoneExists(registerRequest.Email, registerRequest.PhoneNumber);
+        //    if (emailPhoneCheck != null)
+        //    {
+        //        _logger.LogWarning("Registration failed: {Reason}", emailPhoneCheck);
+        //        return _responseHandler.BadRequest<RegisterResponse>(emailPhoneCheck);
+        //    }
+
+        //    // Create Identity User
+        //    using var transaction = await _context.Database.BeginTransactionAsync();
+        //    try
+        //    {
+        //        var user = new User
+        //        {
+        //            UserName = registerRequest.Email, // Modify it by what you need
+        //            Email = registerRequest.Email,
+        //            PhoneNumber = registerRequest.PhoneNumber,
+        //            EmailConfirmed = true
+        //        };
+
+        //        var createUserResult = await _userManager.CreateAsync(user, registerRequest.Password);
+        //        if (!createUserResult.Succeeded)
+        //        {
+        //            var errors = createUserResult.Errors.Select(e => e.Description).ToList();
+        //            _logger.LogWarning("User creation failed for Email: {Email}. Errors: {Errors}", registerRequest.Email, string.Join(", ", errors));
+        //            return _responseHandler.BadRequest<RegisterResponse>(string.Join(", ", errors));
+        //        }
+
+        //        // Assign Buyer role
+        //        await _userManager.AddToRoleAsync(user, "Buyer");
+        //        _logger.LogInformation("User created and role 'Buyer' assigned. ID: {UserId}", user.Id);
+
+        //        var tokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
+
+        //        //var otp = await _otpService.GenerateAndStoreOtpAsync(user.Id);
+
+        //        // Send OTP via Email
+        //        // await _emailService.SendOtpEmailAsync(user, otp);
+        //        //
+        //        var buyer = new Buyer
+        //        { Id = user.Id,  // Use the same UserId
+        //            User = user,
+        //            FirstName = registerRequest.FirstName,
+        //            LastName = registerRequest.LastName,
+        //            BirthDate = registerRequest.BirthDate,
+        //            CreatedAt = DateTime.UtcNow
+
+        //        };
+        //        await _context.Buyers.AddAsync(buyer);
+        //        await _context.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+
+        //         _logger.LogInformation("User registration completed successfully. Email sent to {Email}", registerRequest.Email);
+
+
+        //        var response = new RegisterResponse
+        //        {
+        //            Email = registerRequest.Email,
+        //            Id = user.Id,
+        //            IsEmailConfirmed = true,
+        //            PhoneNumber = registerRequest.PhoneNumber,
+        //            Role = "Buyer",
+        //            AccessToken = tokens.AccessToken,
+        //            RefreshToken = tokens.RefreshToken
+        //        };
+
+        //        return _responseHandler.Created<RegisterResponse>(response, "User registered successfully. Please check your email to receive the OTP.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        _logger.LogError(ex, "Error occurred during RegisterUserAsync for Email: {Email}", registerRequest.Email);
+        //        return _responseHandler.BadRequest<RegisterResponse>("An error occurred during registration.");
+        //    }
+        //}
+        #endregion   
+
+
         public async Task<Response<LoginResponse>> LoginAsync(LoginRequest loginRequest)
         {
-            // Find user by email or phone number
-            User? user = await FindUserByEmailAsync(loginRequest.Email);
+            _logger.LogInformation("LoginAsync started for Email: {Email}", loginRequest.Email);
 
+            // Find user
+            User? user = await FindUserByEmailAsync(loginRequest.Email);
             if (user == null)
+            {
+                _logger.LogWarning("Login failed: User not found for Email: {Email}", loginRequest.Email);
                 return _responseHandler.NotFound<LoginResponse>("User not found.");
+            }
 
             // Check password
             if (!await _userManager.CheckPasswordAsync(user, loginRequest.Password))
+            {
+                _logger.LogWarning("Login failed: Invalid password for UserId: {UserId}", user.Id);
                 return _responseHandler.BadRequest<LoginResponse>("Invalid password.");
+            }
 
-            // Check if email is confirmed
+            // Check email confirmation
             if (!user.EmailConfirmed)
+            {
+                _logger.LogWarning("Login failed: Email not confirmed for UserId: {UserId}", user.Id);
                 return _responseHandler.BadRequest<LoginResponse>("Email is not verified. Please verify your email first.");
+            }
 
-            // If OTP is not provided, generate and send OTP
-            // if (string.IsNullOrEmpty(loginRequest.Otp))
-            // {
-            //     var otp = await _otpService.GenerateAndStoreOtpAsync(user.Id);
-            //     await _emailService.SendOtpEmailAsync(user, otp);
-            //     return _responseHandler.Success<LoginResponse>(null, "OTP sent to your email. Please provide the OTP to complete login.");
-            // }
-
-            // Get user roles
+            // Get roles
             var roles = await _userManager.GetRolesAsync(user);
-
-
-            // Verify OTP
-            // var isOtpValid = await _otpService.ValidateOtpAsync(user.Id, loginRequest.Otp);
-            // if (!isOtpValid)
-            //     return _responseHandler.BadRequest<LoginResponse>("Invalid or expired OTP.");
+            _logger.LogInformation("Roles retrieved for UserId: {UserId}, Roles: {Roles}", user.Id, string.Join(", ", roles));
 
             // Generate tokens
             var tokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
+            _logger.LogInformation("Tokens generated for UserId: {UserId}", user.Id);
 
             var response = new LoginResponse
             {
@@ -91,8 +221,11 @@ namespace Ecommerce.DataAccess.Services.Auth
                 RefreshToken = tokens.RefreshToken,
             };
 
+            _logger.LogInformation("Login successful for UserId: {UserId}, Email: {Email}", user.Id, user.Email);
             return _responseHandler.Success(response, "Login successful.");
         }
+
+
         public async Task<Response<RegisterResponse>> RegisterAsync(RegisterRequest registerRequest)
         {
             _logger.LogInformation("RegisterAsync started for Email: {Email}", registerRequest.Email);
@@ -100,17 +233,16 @@ namespace Ecommerce.DataAccess.Services.Auth
             var emailPhoneCheck = await CheckIfEmailOrPhoneExists(registerRequest.Email, registerRequest.PhoneNumber);
             if (emailPhoneCheck != null)
             {
-                _logger.LogWarning("Registration failed: {Reason}", emailPhoneCheck);
+                _logger.LogWarning("Registration failed for Email: {Email}, Reason: {Reason}", registerRequest.Email, emailPhoneCheck);
                 return _responseHandler.BadRequest<RegisterResponse>(emailPhoneCheck);
             }
 
-            // Create Identity User
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var user = new User
                 {
-                    UserName = registerRequest.Email, // Modify it by what you need
+                    UserName = registerRequest.Email,
                     Email = registerRequest.Email,
                     PhoneNumber = registerRequest.PhoneNumber,
                     EmailConfirmed = true
@@ -119,38 +251,32 @@ namespace Ecommerce.DataAccess.Services.Auth
                 var createUserResult = await _userManager.CreateAsync(user, registerRequest.Password);
                 if (!createUserResult.Succeeded)
                 {
-                    var errors = createUserResult.Errors.Select(e => e.Description).ToList();
-                    _logger.LogWarning("User creation failed for Email: {Email}. Errors: {Errors}", registerRequest.Email, string.Join(", ", errors));
-                    return _responseHandler.BadRequest<RegisterResponse>(string.Join(", ", errors));
+                    var errors = string.Join(", ", createUserResult.Errors.Select(e => e.Description));
+                    _logger.LogWarning("User creation failed for Email: {Email}. Errors: {Errors}", registerRequest.Email, errors);
+                    return _responseHandler.BadRequest<RegisterResponse>(errors);
                 }
 
-                // Assign Buyer role
                 await _userManager.AddToRoleAsync(user, "Buyer");
-                _logger.LogInformation("User created and role 'Buyer' assigned. ID: {UserId}", user.Id);
+                _logger.LogInformation("User created and 'Buyer' role assigned. UserId: {UserId}", user.Id);
 
                 var tokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
+                _logger.LogInformation("Tokens generated for UserId: {UserId}", user.Id);
 
-                //var otp = await _otpService.GenerateAndStoreOtpAsync(user.Id);
-
-                // Send OTP via Email
-                // await _emailService.SendOtpEmailAsync(user, otp);
-                //
                 var buyer = new Buyer
-                { Id = user.Id,  // Use the same UserId
+                {
+                    Id = user.Id,
                     User = user,
                     FirstName = registerRequest.FirstName,
                     LastName = registerRequest.LastName,
                     BirthDate = registerRequest.BirthDate,
                     CreatedAt = DateTime.UtcNow
-                    
                 };
+
                 await _context.Buyers.AddAsync(buyer);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                // await transaction.CommitAsync();
-                //
-                // _logger.LogInformation("User registration completed successfully. Email sent to {Email}", registerRequest.Email);
 
+                _logger.LogInformation("Registration completed successfully for UserId: {UserId}, Email: {Email}", user.Id, user.Email);
 
                 var response = new RegisterResponse
                 {
@@ -163,15 +289,16 @@ namespace Ecommerce.DataAccess.Services.Auth
                     RefreshToken = tokens.RefreshToken
                 };
 
-                return _responseHandler.Created<RegisterResponse>(response, "User registered successfully. Please check your email to receive the OTP.");
+                return _responseHandler.Created(response, "User registered successfully. Please check your email to receive the OTP.");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error occurred during RegisterUserAsync for Email: {Email}", registerRequest.Email);
+                _logger.LogError(ex, "Error occurred during RegisterAsync for Email: {Email}", registerRequest.Email);
                 return _responseHandler.BadRequest<RegisterResponse>("An error occurred during registration.");
             }
         }
+
 
         public async Task<Response<ForgetPasswordResponse>> ForgotPasswordAsync(ForgetPasswordRequest model)
         {

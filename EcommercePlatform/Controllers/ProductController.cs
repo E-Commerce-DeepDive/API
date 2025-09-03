@@ -77,4 +77,12 @@ public class ProductsController : Controller
         var result = await _adminService.DeleteProductAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("category/{categoryName}")]
+    public async Task<IActionResult> GetProductsByCategory(string categoryName)
+    {
+        var result = await _adminService.GetProductsByCategoryNameAsync(categoryName);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }

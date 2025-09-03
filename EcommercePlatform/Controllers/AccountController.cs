@@ -87,7 +87,7 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<Response<RegisterResponse>>> Register([FromForm] RegisterRequest request)
+        public async Task<ActionResult<Response<RegisterResponse>>> Register([FromBody]RegisterRequest request)
         {
             ValidationResult validationResult = await _registerValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -124,7 +124,7 @@ namespace Ecommerce.API.Controllers
         //     return StatusCode((int)result.StatusCode, result);
         // }
         [HttpPost("forget-password")]
-        public async Task<ActionResult<Response<ForgetPasswordResponse>>> ForgetPassword([FromBody] ForgetPasswordRequest request)
+        public async Task<ActionResult<Response<ForgetPasswordResponse>>> ForgetPassword( ForgetPasswordRequest request)
         {
             ValidationResult validationResult = await _forgetPasswordValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -139,7 +139,7 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<ActionResult<Response<ResetPasswordResponse>>> ResetPassword([FromBody] ResetPasswordRequest request)
+        public async Task<ActionResult<Response<ResetPasswordResponse>>> ResetPassword( ResetPasswordRequest request)
         {
             ValidationResult validationResult = await _resetPasswordValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -154,7 +154,7 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken( string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return BadRequest(_responseHandler.BadRequest<string>("RefreshTokenIsNotFound"));
@@ -179,7 +179,7 @@ namespace Ecommerce.API.Controllers
         }
         [HttpPost("change-password")]
         [Authorize]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        public async Task<IActionResult> ChangePassword( ChangePasswordRequest request)
         {
             var validationResult = await _changePasswordValidator.ValidateAsync(request);
             if (!validationResult.IsValid)

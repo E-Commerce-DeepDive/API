@@ -10,6 +10,7 @@ using Ecommerce.Utilities.Configurations;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Stripe;
 
 using StackExchange.Redis;
 
@@ -49,8 +50,21 @@ namespace EcommercePlatform
             builder.Services.AddDatabase(builder.Configuration);
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
             builder.Services.AddEmailServices(builder.Configuration);
-            builder.Services.AddCors();
-            
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder
+                        .SetIsOriginAllowed(origin => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
+
+            // Payment 
+            Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
             builder.Services.AddFluentValidation();
 
@@ -86,13 +100,15 @@ namespace EcommercePlatform
             }
             #endregion
 
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment()||app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseCors(c=>c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+           //app.UseCors(c=>c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 
