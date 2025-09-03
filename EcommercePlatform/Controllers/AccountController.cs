@@ -43,7 +43,7 @@ namespace Ecommerce.API.Controllers
             _changePasswordValidator = changePasswordValidator;
         }
         [HttpPost("login")]
-        public async Task<ActionResult<Response<LoginResponse>>> Login( LoginRequest request)
+        public async Task<ActionResult<Response<LoginResponse>>> Login([FromBody] LoginRequest request)
         {
             ValidationResult validationResult = await _loginValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -87,7 +87,7 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<Response<RegisterResponse>>> Register( RegisterRequest request)
+        public async Task<ActionResult<Response<RegisterResponse>>> Register([FromBody]RegisterRequest request)
         {
             ValidationResult validationResult = await _registerValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
