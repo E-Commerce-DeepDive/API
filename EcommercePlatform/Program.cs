@@ -10,6 +10,7 @@ using Ecommerce.Utilities.Configurations;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Stripe;
 
 using StackExchange.Redis;
 
@@ -62,8 +63,8 @@ namespace EcommercePlatform
                 });
             });
 
-
-
+            // Payment 
+            Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
             builder.Services.AddFluentValidation();
 
