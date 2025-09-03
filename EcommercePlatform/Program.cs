@@ -49,8 +49,21 @@ namespace EcommercePlatform
             builder.Services.AddDatabase(builder.Configuration);
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
             builder.Services.AddEmailServices(builder.Configuration);
-            builder.Services.AddCors();
-            
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder
+                        .SetIsOriginAllowed(origin => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
+
+
+
 
             builder.Services.AddFluentValidation();
 
@@ -91,8 +104,10 @@ namespace EcommercePlatform
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseCors(c=>c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+           //app.UseCors(c=>c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 
