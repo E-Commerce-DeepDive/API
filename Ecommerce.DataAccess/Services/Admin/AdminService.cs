@@ -192,8 +192,25 @@ public async Task<Response<List<GetProductResponse>>> GetProductsAsync(Expressio
     {
         return await GetProductAsync(p => p.Id == id && p.IsActive && !p.IsDeleted);
     }
-    
-    
+
+
+    public async Task<Response<List<GetProductResponse>>> GetProductsByCategoryNameAsync(string categoryName)
+    {
+        if (string.IsNullOrWhiteSpace(categoryName))
+        {
+            _logger.LogWarning("GetProductsByCategoryNameAsync called with empty categoryName.");
+            return _responseHandler.BadRequest<List<GetProductResponse>>("Category name is required.");
+        }
+
+        return await GetProductsAsync(p =>
+            p.Category != null &&
+            p.Category.Name.ToLower() == categoryName.ToLower() &&
+            p.IsActive &&
+            !p.IsDeleted);
+    }
+
+
+
     private async Task<IList<ProductImage>> UploadImagesAsync(IEnumerable<IFormFile> files, Guid productId)
     {
         var images = new List<ProductImage>();

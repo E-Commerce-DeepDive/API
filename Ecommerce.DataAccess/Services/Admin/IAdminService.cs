@@ -15,4 +15,6 @@ public interface IAdminService
     Task<Response<GetProductResponse>> GetProductByIdAsync(Guid id);
     Task<Response<string>> DeleteProductAsync(Guid productId);
     Task<Response<Guid>> UpdateProductAsync(Guid productId, UpdateProductRequest dto);
+
+    Task<Response<List<GetProductResponse>>> GetProductsByCategoryNameAsync(string Category);
 }
