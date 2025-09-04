@@ -6,10 +6,14 @@ using Ecommerce.DataAccess.Services.Admin;
 using Ecommerce.DataAccess.Services.Auth;
 using Ecommerce.DataAccess.Services.Cart;
 using Ecommerce.DataAccess.Services.Category;
+using Ecommerce.DataAccess.Services.Discount;
 using Ecommerce.DataAccess.Services.Email;
 using Ecommerce.DataAccess.Services.ImageUploading;
 using Ecommerce.DataAccess.Services.OAuth;
 using Ecommerce.DataAccess.Services.Order;
+using Ecommerce.DataAccess.Services.Payment;
+using Ecommerce.DataAccess.Services.Review;
+
 //using Ecommerce.DataAccess.Services.OTP;
 using Ecommerce.DataAccess.Services.Token;
 using Ecommerce.DataAccess.Services.Wishlist;
@@ -39,12 +43,14 @@ namespace Ecommerce.DataAccess.Extensions
             services.AddScoped<ITokenStoreService, TokenStoreService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthGoogleService, AuthGoogleService>();
-            // services.AddScoped<IReviewService, ReviewService>();
-             services.AddScoped<ICategoryService, CategoryService>();
-             services.AddScoped<IWishlistService, WishlistService>();    
-             services.AddScoped<IOrderService, OrderService>();
-             services.AddScoped<ICartService, CartService>();
+            services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IWishlistService, WishlistService>();    
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ICartService, CartService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IDiscountService, DiscountService>();
+            services.AddScoped<IPaymentService, StripePaymentService>();
             return services;
         }
 

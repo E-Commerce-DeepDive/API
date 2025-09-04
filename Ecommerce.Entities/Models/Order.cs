@@ -17,11 +17,7 @@ public class Order
     [ForeignKey(nameof(BuyerId))]
     public Buyer Buyer { get; set; }
 
-    //[Required]
-    // public string SellerId { get; set; }
-    //
-    // [ForeignKey(nameof(SellerId))]
-
+    
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
     public decimal TotalPrice { get; set; }
