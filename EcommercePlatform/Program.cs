@@ -57,13 +57,12 @@ namespace EcommercePlatform
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
+                options.AddPolicy("AllowAll", policy =>
                 {
-                    builder
-                        .SetIsOriginAllowed(origin => true)
-                        .AllowAnyHeader()
+                    policy
+                        .AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowCredentials();
+                        .AllowAnyHeader();
                 });
             });
 

@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-
+using Ecommerce.Entities.DTO.Account;
 using Ecommerce.Entities.DTO.Account.Auth;
 using Ecommerce.Entities.DTO.Account.Auth.Login;
 using Ecommerce.Entities.DTO.Account.Auth.Register;
@@ -23,5 +23,8 @@ namespace Ecommerce.DataAccess.Services.Auth
         Task<RefreshTokenResponse> RefreshTokenAsync(string refreshToken);
         Task<Response<string>> LogoutAsync(ClaimsPrincipal userClaims);
         Task<Response<string>> ChangePasswordAsync(ClaimsPrincipal user, ChangePasswordRequest request);
+
+        Task<Response<UserProfileDto>> GetProfileAsync(ClaimsPrincipal userClaims);
+        Task<Response<bool>> UpdateProfileAsync(ClaimsPrincipal userClaims, UpdateUserProfileDto dto);
     }
 }

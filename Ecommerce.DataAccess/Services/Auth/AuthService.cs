@@ -4,6 +4,7 @@ using Ecommerce.DataAccess.ApplicationContext;
 using Ecommerce.DataAccess.Services.Email;
 //using Ecommerce.DataAccess.Services.OTP;
 using Ecommerce.DataAccess.Services.Token;
+using Ecommerce.Entities.DTO.Account;
 using Ecommerce.Entities.DTO.Account.Auth;
 using Ecommerce.Entities.DTO.Account.Auth.Login;
 using Ecommerce.Entities.DTO.Account.Auth.Register;
@@ -28,7 +29,7 @@ namespace Ecommerce.DataAccess.Services.Auth
         private readonly UserManager<User> _userManager;
         private readonly EcommerceContext _context;
         private readonly IEmailService _emailService;
-       // private readonly IOTPService _otpService;
+        // private readonly IOTPService _otpService;
         private readonly ResponseHandler _responseHandler;
         private readonly ITokenStoreService _tokenStoreService;
         private readonly ILogger<AuthService> _logger;
@@ -38,7 +39,7 @@ namespace Ecommerce.DataAccess.Services.Auth
             _userManager = userManager;
             _context = context;
             _emailService = emailService;
-          //  _otpService = otpService;
+            //  _otpService = otpService;
             _responseHandler = responseHandler;
             _tokenStoreService = tokenStoreService;
             _logger = logger;
@@ -453,7 +454,7 @@ namespace Ecommerce.DataAccess.Services.Auth
 
                 _logger.LogInformation("Generating new access and refresh tokens for user: {UserId}", user.Id);
                 var userTokens = await _tokenStoreService.GenerateAndStoreTokensAsync(user.Id, user);
-                
+
                 await _tokenStoreService.SaveRefreshTokenAsync(user.Id, userTokens.RefreshToken);
                 _logger.LogInformation("New refresh token saved for user: {UserId}", user.Id);
 
@@ -507,7 +508,7 @@ namespace Ecommerce.DataAccess.Services.Auth
                 // Invalidate all refresh tokens for this user
                 await _tokenStoreService.InvalidateOldTokensAsync(userId);
 
-                return _responseHandler.Success<string>(null,"Logged out successfully");
+                return _responseHandler.Success<string>(null, "Logged out successfully");
             }
             catch (Exception ex)
             {
@@ -551,12 +552,81 @@ namespace Ecommerce.DataAccess.Services.Auth
                 // Invalidate all existing refresh tokens for security
                 await _tokenStoreService.InvalidateOldTokensAsync(userId);
 
-                return _responseHandler.Success<string>(null,"Password changed successfully. Please login again.");
+                return _responseHandler.Success<string>(null, "Password changed successfully. Please login again.");
             }
             catch (Exception ex)
             {
                 return _responseHandler.ServerError<string>($"An error occurred while changing password: {ex.Message}");
             }
         }
+
+
+        public async Task<Response<UserProfileDto>> GetProfileAsync(ClaimsPrincipal userClaims)
+        {
+            try
+            {
+                var userId = userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return _responseHandler.Unauthorized<UserProfileDto>("User not authenticated");
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return _responseHandler.NotFound<UserProfileDto>("User not found");
+
+                var buyer = await _context.Buyers.FirstOrDefaultAsync(b => b.Id == user.Id);
+
+                return _responseHandler.Success(new UserProfileDto
+                {
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    FullName = buyer != null ? $"{buyer.FirstName} {buyer.LastName}" : "",
+                    BirthDate = buyer?.BirthDate
+                }, "Profile retrieved successfully");
+            }
+            catch (Exception ex)
+            {
+                return _responseHandler.ServerError<UserProfileDto>($"An error occurred while retrieving profile: {ex.Message}");
+            }
+        }
+
+        public async Task<Response<bool>> UpdateProfileAsync(ClaimsPrincipal userClaims, UpdateUserProfileDto dto)
+        {
+            try
+            {
+                var userId = userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return _responseHandler.Unauthorized<bool>("User not authenticated");
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return _responseHandler.NotFound<bool>("User not found");
+
+                var buyer = await _context.Buyers.FirstOrDefaultAsync(b => b.Id == user.Id);
+                if (buyer != null)
+                {
+                    var names = dto.FullName?.Split(' ', 2);
+                    if (names != null && names.Length > 0)
+                    {
+                        buyer.FirstName = names[0];
+                        buyer.LastName = names.Length > 1 ? names[1] : "";
+                    }
+
+                    buyer.BirthDate = (DateTime)dto.BirthDate;
+                    user.PhoneNumber = dto.PhoneNumber;
+
+                    await _userManager.UpdateAsync(user);
+                    await _context.SaveChangesAsync();
+
+                    return _responseHandler.Success(true, "Profile updated successfully");
+                }
+
+                return _responseHandler.BadRequest<bool>("Failed to update profile");
+            }
+            catch (Exception ex)
+            {
+                return _responseHandler.ServerError<bool>($"An error occurred while updating profile: {ex.Message}");
+            }
+        }
+
     }
 }
