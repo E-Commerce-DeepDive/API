@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Identity;
 using Stripe;
 
 using StackExchange.Redis;
+using FluentValidation;
+using Ecommerce.API.Validators;
 
 namespace EcommercePlatform
 {
@@ -50,6 +52,8 @@ namespace EcommercePlatform
             builder.Services.AddDatabase(builder.Configuration);
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
             builder.Services.AddEmailServices(builder.Configuration);
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateDiscountDtoValidator>(); // Register All validators from the specified assembly
+
 
             builder.Services.AddCors(options =>
             {
