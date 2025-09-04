@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using Ecommerce.Entities.Models.Reviews;
 using Ecommerce.Utilities.Enums;
 
-//using Ecommerce.Entities.Models.Reviews;
-
 namespace Ecommerce.Entities.Models.Auth.Users
 {
     public class Buyer
